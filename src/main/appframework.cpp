@@ -91,13 +91,17 @@ void* AppSystemFactory(const char* pName, int* pReturnCode)
 
 // SceneUtils_001 tries to set convars on init
 // which then calls convar change handlers that try to load main scenesystem appsystem
-void SetConvarValueStub(ICvar* icvar, ConVarHandle handle)
+void SetConvarValueStub(ICvar* icvar, ConVarRef ref)
 {
-	auto pCvar = icvar->GetConVar(handle);
+	ConVarRefAbstract cvar(ref);
+	if (!cvar.IsConVarDataValid())
+		return;
 
 	// it also crashes if r_dopixelvisibility is true
-	if (!strcmp("r_dopixelvisibility", pCvar->m_pszName))
-		((*(CVValue_t*)&pCvar->values).m_bValue) = false;
+	if (!strcmp("r_dopixelvisibility", cvar.GetName()))
+	{
+		cvar.SetBool(false);
+	}
 }
 
 void InitializeCoreModules()
@@ -108,6 +112,7 @@ void InitializeCoreModules()
 
 	// Find interfaces
 	Interfaces::cvar = Modules::tier0->FindInterface<ICvar*>(CVAR_INTERFACE_VERSION);
+	g_pCVar = Interfaces::cvar;
 	Interfaces::schemaSystem = Modules::schemaSystem->FindInterface<CSchemaSystem*>(SCHEMASYSTEM_INTERFACE_VERSION);
 
 	// Manually connect interfaces

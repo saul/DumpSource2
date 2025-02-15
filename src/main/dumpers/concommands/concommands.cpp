@@ -31,38 +31,38 @@
 #include <algorithm>
 #include <fstream>
 #include <vector>
+#include <iostream>
 
 namespace Dumpers::ConCommands
 {
 
 #define MINMAXVALUEPRINT(typeName) \
-	stream << " " << value.typeName; 													\
+	stream << " " << value->typeName; 												\
 																														\
-	bool hasMinValue = pCvar->m_cvvMinValue;									\
-	bool hasMaxValue = pCvar->m_cvvMaxValue;									\
+	bool hasMinValue = cvar.HasMin();													\
+	bool hasMaxValue = cvar.HasMax();													\
 																														\
 	stream << " (";																						\
 																														\
 	if (hasMinValue)																					\
-		stream << "min: " << pCvar->m_cvvMinValue->typeName;		\
+		stream << "min: " << conVarData->MinValue()->typeName;	\
 																														\
 	if (hasMaxValue)																					\
 	{																													\
 		if (hasMinValue)																				\
 			stream << ", ";																				\
-		stream << "max: " << pCvar->m_cvvMaxValue->typeName;		\
+		stream << "max: " << conVarData->MaxValue()->typeName;		\
 	}																													\
 																														\
 	if (hasMinValue || hasMaxValue)														\
 		stream << ", ";																					\
 																														\
-	WriteFlags(pCvar->flags, stream);													\
+	WriteFlags(cvar.GetFlags(), stream);											\
 																														\
 	stream << ")";
 
-#define FCVAR_MISSING5	((uint64_t)1<<(uint64_t)30)
-#define FCVAR_MISSING6	((uint64_t)1<<(uint64_t)31)
-#define FCVAR_DEFENSIVE	((uint64_t)1<<(uint64_t)32)
+#define FCVAR_MISSING1	(1ull<<30)
+#define FCVAR_MISSING2	(1ull<<31)
 
 std::vector<std::pair<uint64_t, const char*>> g_flagMap{
 	{FCVAR_LINKED_CONCOMMAND, "linked_concommand"},
@@ -75,18 +75,18 @@ std::vector<std::pair<uint64_t, const char*>> g_flagMap{
 	{FCVAR_ARCHIVE, "archive"},
 	{FCVAR_NOTIFY, "notify"},
 	{FCVAR_USERINFO, "userinfo"},
-	{FCVAR_MISSING0, "hide"},
+	{FCVAR_REFERENCE, "reference"},
 	{FCVAR_UNLOGGED, "unlogged"},
-	{FCVAR_MISSING1, "missing1"},
+	{FCVAR_INITIAL_SETVALUE, "initial_setvalue"},
 	{FCVAR_REPLICATED, "replicated"},
 	{FCVAR_CHEAT, "cheat"},
 	{FCVAR_PER_USER, "per_user"},
 	{FCVAR_DEMO, "demo"},
 	{FCVAR_DONTRECORD, "dontrecord"},
-	{FCVAR_MISSING2, "missing2"},
+	{FCVAR_PERFORMING_CALLBACKS, "performing_Callbacks"},
 	{FCVAR_RELEASE, "release"},
 	{FCVAR_MENUBAR_ITEM, "menubar_item"},
-	{FCVAR_MISSING3, "missing3"},
+	{FCVAR_COMMANDLINE_ENFORCED, "commandline_enforced"},
 	{FCVAR_NOT_CONNECTED, "notconnected"},
 	{FCVAR_VCONSOLE_FUZZY_MATCHING, "vconsole_fuzzy_matching"},
 	{FCVAR_SERVER_CAN_EXECUTE, "server_can_execute"},
@@ -95,8 +95,8 @@ std::vector<std::pair<uint64_t, const char*>> g_flagMap{
 	{FCVAR_VCONSOLE_SET_FOCUS, "vconsole_set_focus"},
 	{FCVAR_CLIENTCMD_CAN_EXECUTE, "clientcmd_can_execute"},
 	{FCVAR_EXECUTE_PER_TICK, "execute_per_tick"},
-	{FCVAR_MISSING5, "missing5"},
-	{FCVAR_MISSING6, "missing6"},
+	{FCVAR_MISSING1, "missing1"},
+	{FCVAR_MISSING2, "missing2"},
 	{FCVAR_DEFENSIVE, "defensive"}
 };
 
@@ -112,17 +112,17 @@ void WriteFlags(uint64_t flags, std::ofstream& stream)
 		}
 	}
 }
-
-void WriteValueLine(ConVar* pCvar, std::ofstream& stream)
+void WriteValueLine(ConVarRefAbstract cvar, std::ofstream& stream)
 {
-	auto& value = *pCvar->m_cvvDefaultValue;
+	auto conVarData = cvar.GetConVarData();
+	auto value = cvar.GetConVarData()->DefaultValue();
 
-	switch (pCvar->m_eVarType)
+	switch (cvar.GetType())
 	{
 	case EConVarType_Bool:
 	{
-		stream << " " << (value.m_bValue ? "true" : "false") << " (";
-		WriteFlags(pCvar->flags, stream);
+		stream << " " << (value->m_bValue ? "true" : "false") << " (";
+		WriteFlags(cvar.GetFlags(), stream);
 		stream << ")";
 		break;
 	}
@@ -153,53 +153,53 @@ void WriteValueLine(ConVar* pCvar, std::ofstream& stream)
 	}
 	case EConVarType_Float32:
 	{
-		MINMAXVALUEPRINT(m_flValue);
+		MINMAXVALUEPRINT(m_fl32Value);
 		break;
 	}
 	case EConVarType_Float64:
 	{
-		MINMAXVALUEPRINT(m_dbValue);
+		MINMAXVALUEPRINT(m_fl64Value);
 		break;
 	}
 	case EConVarType_String:
 	{
-		stream << " \"" << (value.m_szValue ? value.m_szValue : "") << "\"" << " (";
-		WriteFlags(pCvar->flags, stream);
+		stream << " \"" << (value->m_StringValue.m_pString ? value->m_StringValue.m_pString : "") << "\"" << " (";
+		WriteFlags(cvar.GetFlags(), stream);
 		stream << ")";
 		break;
 	}
 	case EConVarType_Color:
 	{
-		stream << " [" << value.m_clrValue.r() << ", " << value.m_clrValue.g() << ", " << value.m_clrValue.b() << ", " << value.m_clrValue.a() << "]" << " (";
-		WriteFlags(pCvar->flags, stream);
+		stream << " [" << value->m_clrValue.r() << ", " << value->m_clrValue.g() << ", " << value->m_clrValue.b() << ", " << value->m_clrValue.a() << "]" << " (";
+		WriteFlags(cvar.GetFlags(), stream);
 		stream << ")";
 		break;
 	}
 	case EConVarType_Vector2:
 	{
-		stream << " [" << value.m_vec2Value.x << ", " << value.m_vec2Value.y << "]" << " (";
-		WriteFlags(pCvar->flags, stream);
+		stream << " [" << value->m_vec2Value.x << ", " << value->m_vec2Value.y << "]" << " (";
+		WriteFlags(cvar.GetFlags(), stream);
 		stream << ")";
 		break;
 	}
 	case EConVarType_Vector3:
 	{
-		stream << " [" << value.m_vec3Value.x << ", " << value.m_vec3Value.y << ", " << value.m_vec3Value.x << "]" << " (";
-		WriteFlags(pCvar->flags, stream);
+		stream << " [" << value->m_vec3Value.x << ", " << value->m_vec3Value.y << ", " << value->m_vec3Value.x << "]" << " (";
+		WriteFlags(cvar.GetFlags(), stream);
 		stream << ")";
 		break;
 	}
 	case EConVarType_Vector4:
 	{
-		stream << " [" << value.m_vec4Value.x << ", " << value.m_vec4Value.y << ", " << value.m_vec4Value.x << ", " << value.m_vec4Value.w << "]" << " (";
-		WriteFlags(pCvar->flags, stream);
+		stream << " [" << value->m_vec4Value.x << ", " << value->m_vec4Value.y << ", " << value->m_vec4Value.x << ", " << value->m_vec4Value.w << "]" << " (";
+		WriteFlags(cvar.GetFlags(), stream);
 		stream << ")";
 		break;
 	}
 	case EConVarType_Qangle:
 	{
-		stream << " [" << value.m_angValue.x << ", " << value.m_angValue.y << ", " << value.m_angValue.x << "]" << " (";
-		WriteFlags(pCvar->flags, stream);
+		stream << " [" << value->m_angValue.x << ", " << value->m_angValue.y << ", " << value->m_angValue.x << "]" << " (";
+		WriteFlags(cvar.GetFlags(), stream);
 		stream << ")";
 		break;
 	}
@@ -249,28 +249,17 @@ std::string EscapeDescription(std::string str)
 
 void DumpConVars()
 {
-	ConVarHandle hCvarHandle;
-	hCvarHandle.Set(0);
-	ConVar* pCvar = nullptr;
-
-	std::vector<ConVar*> convars;
+	std::vector<ConVarRefAbstract> convars;
 	// there's always gonna be a lot of convars, let's save some reallocations
 	convars.reserve(1000);
 
-	do
+	for (ConVarRefAbstract ref(ConVarRef((uint16)0)); ref.IsValidRef(); ref = ConVarRefAbstract(ConVarRef(ref.GetAccessIndex() + 1)))
 	{
-		pCvar = Interfaces::cvar->GetConVar(hCvarHandle);
+		convars.push_back(ref);
+	}
 
-		hCvarHandle.Set(hCvarHandle.Get() + 1);
-
-		if (!pCvar)
-			continue;
-
-		convars.push_back(pCvar);
-	} while (pCvar);
-
-	std::sort(convars.begin(), convars.end(), [](const ConVar* a, const ConVar* b) {
-		return strcmp(a->m_pszName, b->m_pszName) < 0;
+	std::sort(convars.begin(), convars.end(), [](const ConVarRefAbstract a, const ConVarRefAbstract b) {
+		return strcmp(a.GetName(), b.GetName()) < 0;
 	});
 
 	std::ofstream output(Globals::outputPath / "convars.txt");
@@ -278,77 +267,65 @@ void DumpConVars()
 	for (const auto cvar : convars)
 	{
 		std::string helpString = "<no description>";
-		if (cvar->m_pszHelpString[0])
+		if (cvar.HasHelpText())
 		{
-			helpString = cvar->m_pszHelpString;
+			helpString = cvar.GetHelpText();
 			Globals::stringsIgnoreStream << EscapeDescription(helpString) << "\n";
 			FixNewlineTabbing(helpString);
 		}
 
-		output << cvar->m_pszName;
+		output << cvar.GetName();
 		WriteValueLine(cvar, output);
 		output << "\n\t" << helpString;
 		output << "\n" << std::endl;
 
-		Globals::stringsIgnoreStream << cvar->m_pszName << "\n";
+		Globals::stringsIgnoreStream << cvar.GetName() << "\n";
 	}
 }
 
 void DumpCommands()
 {
-	
-	ConCommandHandle  hConCommandHandle;
-	hConCommandHandle.Set(0);
-	ConCommand* pConCommand = nullptr;
-	ConCommand* pInvalidCommand = Interfaces::cvar->GetCommand(ConCommandHandle());
-
-	std::vector<ConCommand*> commands;
+	std::vector<ConCommandRef> commands;
 	// there's always gonna be a lot of commands, let's save some reallocations
 	commands.reserve(1000);
-
-	do
+	ConCommandData* data = Interfaces::cvar->GetConCommandData(ConCommandRef());
+	for (ConCommandRef ref = ConCommandRef((uint16)0); ref.GetRawData() != data; ref = ConCommandRef(ref.GetAccessIndex() + 1))
 	{
-		pConCommand = Interfaces::cvar->GetCommand(hConCommandHandle);
+		commands.push_back(ref);
+	}
 
-		hConCommandHandle.Set(hConCommandHandle.Get() + 1);
-
-		if (!pConCommand)
-			continue;
-
-		commands.push_back(pConCommand);
-	} while (pConCommand && pConCommand != pInvalidCommand);
-
-	std::sort(commands.begin(), commands.end(), [](const ConCommand* a, const ConCommand* b) {
-		return strcmp(a->m_pszName, b->m_pszName) < 0;
+	std::sort(commands.begin(), commands.end(), [](const ConCommandRef a, const ConCommandRef b) {
+		return strcmp(a.GetName(), b.GetName()) < 0;
 	});
 
 	std::ofstream output(Globals::outputPath / "commands.txt");
-	
+
 	for (const auto command : commands)
 	{
 		std::string helpString = "<no description>";
-		if (command->m_pszHelpString[0])
+		if (command.HasHelpText())
 		{
-			helpString = command->m_pszHelpString;
+			helpString = command.GetHelpText();
 			Globals::stringsIgnoreStream << EscapeDescription(helpString) << "\n";
 			FixNewlineTabbing(helpString);
 		}
 
-		output << command->m_pszName << " (";
-		WriteFlags(command->m_nFlags, output);
+		output << command.GetName() << " (";
+		WriteFlags(command.GetFlags(), output);
 		output << ")\n\t" << helpString;
 		output << "\n" << std::endl;
 
-		Globals::stringsIgnoreStream << command->m_pszName << "\n";
+		Globals::stringsIgnoreStream << command.GetName() << "\n";
 	}
 }
 
 void Dump()
 {
 	// cl_color has a random default value on each start.
-	if (ConVarHandle cvarHandle = Interfaces::cvar->FindConVar("cl_color"); cvarHandle.IsValid())
-		if (ConVar* cvar = Interfaces::cvar->GetConVar(cvarHandle))
-			cvar->m_cvvDefaultValue->m_i16Value = 0;
+	if (ConVarRefAbstract cvar("cl_color"); cvar.IsValidRef())
+	{
+		cvar.GetConVarData()->RemoveDefaultValue();
+	}
 
 	DumpConVars();
 	DumpCommands();
