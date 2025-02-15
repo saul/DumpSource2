@@ -109,7 +109,7 @@ void* UtlMemory_Alloc(void*, bool, int, int) {
 	return nullptr;
 }
 
-int	UtlMemory_CalcNewAllocationCount(int, int, int, int)
+int UtlMemory_CalcNewAllocationCount(int, int, int, int)
 {
 	// STUB
 	return 0;
@@ -125,7 +125,7 @@ int64 V_atoi(const char*)
 	return 0;
 }
 
-int	V_stricmp_fast(const char*, const char*)
+int V_stricmp_fast(const char*, const char*)
 {
 	// STUB
 	return 0;
@@ -206,7 +206,7 @@ void V_StringToVector4D(const char*, Vector4D&, bool*, char**, uint, IParsingErr
 	// STUB
 }
 
-int	V_tier0_strlen(const char*) {
+int V_tier0_strlen(const char*) {
 	// STUB
 	return 0;
 }
