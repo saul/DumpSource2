@@ -149,7 +149,7 @@ void InitializeAppSystems()
 
 		g_factoryMap[appSystem.interfaceVersion] = interface;
 
-		if (appSystem.connect)
+		if (appSystem.connect && Globals::modName == "csgo")
 		{
 			interface->Connect(&AppSystemFactory);
 			interface->Init();
