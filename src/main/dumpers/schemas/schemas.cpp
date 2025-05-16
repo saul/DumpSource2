@@ -26,9 +26,50 @@
 #include <map>
 #include <unordered_set>
 #include <algorithm>
+#include "metadatalist.h"
 
 namespace Dumpers::Schemas
 {
+// Determine how and if to output metadata entry value based on it's type.
+std::optional<std::string> GetMetadataValue(const SchemaMetadataEntryData_t& entry)
+{
+	const auto hashedName = hash_32_fnv1a_const(entry.m_pszName);
+	if (std::ranges::find(string_metadata_entries, hashedName) != string_metadata_entries.end()) {
+		return std::format("\"{}\"", *static_cast<const char**>(entry.m_pData));
+	}
+	else if (std::ranges::find(integer_metadata_entries, hashedName) != integer_metadata_entries.end()) {
+		int result;
+		std::memcpy(&result, entry.m_pData, sizeof(int));
+		return std::to_string(result);
+	}
+	else if (std::ranges::find(float_metadata_entries, hashedName) != float_metadata_entries.end()) {
+		float result;
+		std::memcpy(&result, entry.m_pData, sizeof(float));
+		return std::to_string(result);
+	}
+	else if (std::ranges::find(inline_string_metadata_entries, hashedName) != inline_string_metadata_entries.end()) {
+		// max 8 characters. Also check for null term.
+		char* result = static_cast<char*>(entry.m_pData);
+		for (uint8_t i = 0; i < 8; ++i) {
+			if (result[i] == '\0') {
+				return std::format("\"{}\"", std::string(result, i));
+			}
+		}
+		return std::format("\"{}\"", std::string(result, 8));
+	}
+	return {};
+}
+
+void OutputMetadataEntry(const SchemaMetadataEntryData_t& entry, std::ofstream& output, bool tabulate)
+{
+	output << (tabulate ? "\t" : "") << "// " << entry.m_pszName;
+	const auto metadataValue = GetMetadataValue(entry);
+	if (metadataValue)
+	{
+		output << " = " << *metadataValue;
+	}
+	output << "\n";
+}
 
 void DumpClasses(CSchemaSystemTypeScope* typeScope, std::filesystem::path schemaPath, std::map<std::string, std::unordered_set<std::string>>& foundFiles)
 {
@@ -53,6 +94,13 @@ void DumpClasses(CSchemaSystemTypeScope* typeScope, std::filesystem::path schema
 
 		std::ofstream output((schemaPath / classInfo->m_pszProjectName / sanitizedFileName).replace_extension(".h"));
 
+		// Output metadata entries as comments before the class definition
+		for (uint16_t k = 0; k < classInfo->m_nStaticMetadataCount; k++)
+		{
+			const auto& metadataEntry = classInfo->m_pStaticMetadata[k];
+			OutputMetadataEntry(metadataEntry, output, false);
+		}
+
 		output << "class " << classInfo->m_pszName;
 		Globals::stringsIgnoreStream << classInfo->m_pszName << "\n";
 
@@ -64,6 +112,12 @@ void DumpClasses(CSchemaSystemTypeScope* typeScope, std::filesystem::path schema
 		for (uint16_t k = 0; k < classInfo->m_nFieldCount; k++)
 		{
 			const auto& field = classInfo->m_pFields[k];
+			// Output metadata entires as comments before the field definition
+			for (uint16_t l = 0; l < field.m_nStaticMetadataCount; l++)
+			{
+				const auto& metadataEntry = field.m_pStaticMetadata[l];
+				OutputMetadataEntry(metadataEntry, output, true);
+			}
 
 			output << "\t" << field.m_pType->m_sTypeName.String() << " " << field.m_pszName << ";\n";
 			Globals::stringsIgnoreStream << field.m_pszName << "\n";
@@ -96,6 +150,12 @@ void DumpEnums(CSchemaSystemTypeScope* typeScope, std::filesystem::path schemaPa
 
 		std::ofstream output((schemaPath / enumInfo->m_pszProjectName / sanitizedFileName).replace_extension(".h"));
 
+		for (uint16_t k = 0; k < enumInfo->m_nStaticMetadataCount; k++)
+		{
+			const auto& metadataEntry = enumInfo->m_pStaticMetadata[k];
+			OutputMetadataEntry(metadataEntry, output, false);
+		}
+
 		output << "enum " << enumInfo->m_pszName << " : ";
 		Globals::stringsIgnoreStream << enumInfo->m_pszName << "\n";
 
@@ -122,6 +182,12 @@ void DumpEnums(CSchemaSystemTypeScope* typeScope, std::filesystem::path schemaPa
 		for (uint16_t k = 0; k < enumInfo->m_nEnumeratorCount; k++)
 		{
 			const auto& field = enumInfo->m_pEnumerators[k];
+			// Output metadata entires as comments before the field definition
+			for (uint16_t l = 0; l < field.m_nStaticMetadataCount; l++)
+			{
+				const auto& metadataEntry = field.m_pStaticMetadata[l];
+				OutputMetadataEntry(metadataEntry, output, true);
+			}
 
 			output << "\t" << field.m_pszName << " = " << field.m_nValue << ",\n";
 			Globals::stringsIgnoreStream << field.m_pszName << "\n";
