@@ -27,6 +27,9 @@
 #include <unordered_set>
 #include <algorithm>
 #include "metadatalist.h"
+#include <optional>
+#include <cstring>
+#include <fmt/format.h>
 
 namespace Dumpers::Schemas
 {
@@ -35,7 +38,7 @@ std::optional<std::string> GetMetadataValue(const SchemaMetadataEntryData_t& ent
 {
 	const auto hashedName = hash_32_fnv1a_const(entry.m_pszName);
 	if (std::ranges::find(string_metadata_entries, hashedName) != string_metadata_entries.end()) {
-		return std::format("\"{}\"", *static_cast<const char**>(entry.m_pData));
+		return fmt::format("\"{}\"", *static_cast<const char**>(entry.m_pData));
 	}
 	else if (std::ranges::find(integer_metadata_entries, hashedName) != integer_metadata_entries.end()) {
 		int result;
@@ -52,10 +55,10 @@ std::optional<std::string> GetMetadataValue(const SchemaMetadataEntryData_t& ent
 		char* result = static_cast<char*>(entry.m_pData);
 		for (uint8_t i = 0; i < 8; ++i) {
 			if (result[i] == '\0') {
-				return std::format("\"{}\"", std::string(result, i));
+				return fmt::format("\"{}\"", std::string(result, i));
 			}
 		}
-		return std::format("\"{}\"", std::string(result, 8));
+		return fmt::format("\"{}\"", std::string(result, 8));
 	}
 	return {};
 }
@@ -65,9 +68,8 @@ void OutputMetadataEntry(const SchemaMetadataEntryData_t& entry, std::ofstream& 
 	output << (tabulate ? "\t" : "") << "// " << entry.m_pszName;
 	const auto metadataValue = GetMetadataValue(entry);
 	if (metadataValue)
-	{
 		output << " = " << *metadataValue;
-	}
+
 	output << "\n";
 }
 
