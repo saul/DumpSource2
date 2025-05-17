@@ -8,9 +8,8 @@ A C++ Application that offline dumps schema bindings and convars/commands for [G
 
 Run DumpSource2 from the rootbin folder of a source 2 game. `game/bin/win64`
 
-`DumpSource2 <mod name> <output path>`
+`DumpSource2 <output path>`
 
-- `mod name` - name of the mod folder (csgo, dota2, citadel)
 - `output path` - absolute or relative path to a folder where output should be stored
 
 
