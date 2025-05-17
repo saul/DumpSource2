@@ -18,7 +18,7 @@ jobs:
         submodules: 'true'
 
     - name: Setup CMake
-      uses: lukka/get-cmake@v4
+      uses: lukka/get-cmake@latest
 
     - name: Create build directory
       run: mkdir build
