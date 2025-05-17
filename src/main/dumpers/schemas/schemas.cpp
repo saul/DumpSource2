@@ -30,45 +30,21 @@
 #include <optional>
 #include <cstring>
 #include <fmt/format.h>
+#include "metadata_stringifier.h"
 
 namespace Dumpers::Schemas
 {
-// Determine how and if to output metadata entry value based on it's type.
-std::optional<std::string> GetMetadataValue(const SchemaMetadataEntryData_t& entry)
-{
-	const auto hashedName = hash_32_fnv1a_const(entry.m_pszName);
-	if (std::ranges::find(string_metadata_entries, hashedName) != string_metadata_entries.end()) {
-		return fmt::format("\"{}\"", *static_cast<const char**>(entry.m_pData));
-	}
-	else if (std::ranges::find(integer_metadata_entries, hashedName) != integer_metadata_entries.end()) {
-		int result;
-		std::memcpy(&result, entry.m_pData, sizeof(int));
-		return std::to_string(result);
-	}
-	else if (std::ranges::find(float_metadata_entries, hashedName) != float_metadata_entries.end()) {
-		float result;
-		std::memcpy(&result, entry.m_pData, sizeof(float));
-		return std::to_string(result);
-	}
-	else if (std::ranges::find(inline_string_metadata_entries, hashedName) != inline_string_metadata_entries.end()) {
-		// max 8 characters. Also check for null term.
-		char* result = static_cast<char*>(entry.m_pData);
-		for (uint8_t i = 0; i < 8; ++i) {
-			if (result[i] == '\0') {
-				return fmt::format("\"{}\"", std::string(result, i));
-			}
-		}
-		return fmt::format("\"{}\"", std::string(result, 8));
-	}
-	return {};
-}
-
 void OutputMetadataEntry(const SchemaMetadataEntryData_t& entry, std::ofstream& output, bool tabulate)
 {
 	output << (tabulate ? "\t" : "") << "// " << entry.m_pszName;
-	const auto metadataValue = GetMetadataValue(entry);
-	if (metadataValue)
-		output << " = " << *metadataValue;
+	if (entry.m_pData)
+	{
+		const auto metadataValue = GetMetadataValue(entry);
+		if (metadataValue)
+			output << " = " << *metadataValue;
+		else
+			output << " (UNKNOWN FOR PARSER)";
+	}
 
 	output << "\n";
 }
