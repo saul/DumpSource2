@@ -21,7 +21,6 @@
  */
 #pragma once
 #include <map>
-#include "utils/hash.h"
 
  // List of printable metadata entries that are not tied to any structures.
  // These are used to determine if we can include the corresponding metadata entry value in the dump.
