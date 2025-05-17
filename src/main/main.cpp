@@ -62,4 +62,7 @@ int main(int argc, char** argv)
 	Dumpers::Schemas::Dump();
 
 	spdlog::info("Dumped successfully");
+
+	// skips atexit calls that cause a segfault on dota only while unregistering cvar callbacks
+	_Exit(0);
 }
