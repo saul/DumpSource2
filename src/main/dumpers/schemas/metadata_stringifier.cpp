@@ -48,7 +48,11 @@ std::optional<std::string> GetMetadataValue(const SchemaMetadataEntryData_t& ent
 		switch (valueType)
 		{
 			case MetadataValueType::STRING:
-				return fmt::format("\"{}\"", *static_cast<const char**>(entry.m_pData));
+			{
+				auto value = *static_cast<const char**>(entry.m_pData);
+				Globals::stringsIgnoreStream << value << "\n";
+				return fmt::format("\"{}\"", value);
+			}
 			case MetadataValueType::INTEGER:
 				return std::to_string(*static_cast<int*>(entry.m_pData));
 			case MetadataValueType::FLOAT:
@@ -83,7 +87,9 @@ std::optional<std::string> GetMetadataValue(const SchemaMetadataEntryData_t& ent
 
 				if (hasType)
 					stringStream << value->m_pszType;
-				if (hasName) {
+
+				if (hasName)
+				{
 					if (hasType)
 						stringStream << " ";
 					stringStream << value->m_pszName;
