@@ -52,7 +52,6 @@ void OutputMetadataEntry(const SchemaMetadataEntryData_t& entry, std::ofstream& 
 
 void DumpClasses(CSchemaSystemTypeScope* typeScope, std::filesystem::path schemaPath, std::map<std::string, std::unordered_set<std::string>>& foundFiles)
 {
-	spdlog::info("Dumping schema classes");
 	const auto& classes = typeScope->m_ClassBindings;
 
 	UtlTSHashHandle_t* handles = new UtlTSHashHandle_t[classes.Count()];
@@ -109,7 +108,6 @@ void DumpClasses(CSchemaSystemTypeScope* typeScope, std::filesystem::path schema
 
 void DumpEnums(CSchemaSystemTypeScope* typeScope, std::filesystem::path schemaPath, std::map<std::string, std::unordered_set<std::string>>& foundFiles)
 {
-	spdlog::info("Dumping schema enums");
 	const auto& enums = typeScope->m_EnumBindings;
 
 	UtlTSHashHandle_t* handles = new UtlTSHashHandle_t[enums.Count()];
