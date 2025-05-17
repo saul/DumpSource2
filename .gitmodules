@@ -1,6 +1,7 @@
-[submodule "vendor/hl2sdk"]
+[submodule "vendor/hl2sdk-cs"]
 	path = vendor/hl2sdk-cs2
 	url = https://github.com/alliedmodders/hl2sdk
+	branch = cs
 	shallow = true
 [submodule "vendor/fmt"]
 	path = vendor/fmt
@@ -9,6 +10,7 @@
 [submodule "vendor/hl2sdk-dota"]
 	path = vendor/hl2sdk-dota
 	url = https://github.com/alliedmodders/hl2sdk
+	branch = dota
 	shallow = true
 [submodule "vendor/spdlog"]
 	path = vendor/spdlog
