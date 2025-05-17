@@ -25,10 +25,9 @@
 #include "plat.h"
 #include <filesystem>
 #include "common.h"
-
 #include <string>
 #include <vector>
-
+#include <spdlog/spdlog.h>
 
 #ifdef _WIN32
 #include <Psapi.h>
@@ -83,6 +82,7 @@ public:
 	CModule(const char *path, const char *module) :
 		m_pszModule(module), m_pszPath(path)
 	{
+		spdlog::debug("Loading \"{}\" module", m_pszModule);
 		auto szModule = (std::filesystem::current_path() / path / (MODULE_PREFIX + std::string(m_pszModule) + MODULE_EXT)).lexically_normal().generic_string();
 
 		m_hModule = dlmount(szModule.c_str());
@@ -90,9 +90,9 @@ public:
 		if (!m_hModule)
 		{
 #ifdef _WIN32
-			ExitError("Failed to load %s\n", szModule.c_str());
+			ExitError("Failed to load %s", szModule.c_str());
 #else
-			ExitError("Failed to load %s\n%s\n", szModule.c_str(), dlerror());
+			ExitError("Failed to load %s\n%s", szModule.c_str(), dlerror());
 #endif
 			return;
 		}
@@ -106,14 +106,10 @@ public:
 		InitializeSections();
 #else
 		if (int e = GetModuleInformation(m_hModule, &m_base, &m_size, m_sections))
-			ExitError("Failed to get module info for %s, error %d\n", szModule, e);
+			ExitError("Failed to get module info for %s, error %d", szModule, e);
 #endif
 
-		/*for (auto& section : m_sections)
-			ConMsg("Section %s base: 0x%p | size: %d\n", section.m_szName.c_str(), section.m_pBase, section.m_iSize);
-			*/
-
-		printf("Initialized module %s base: 0x%p | size: %zu\n", m_pszModule, m_base, m_size);
+		spdlog::trace("Initialized module {} base: {:p}, size: {:x}", m_pszModule, m_base, m_size);
 	}
 
 	void *FindSignature(const byte *pData, size_t iSigLength, int &error)
@@ -155,7 +151,7 @@ public:
 		CreateInterfaceFn fn = (CreateInterfaceFn)dlsym(m_hModule, "CreateInterface");
 
 		if (!fn)
-			ExitError("Could not find CreateInterface in %s\n", m_pszModule);
+			ExitError("Could not find CreateInterface in %s", m_pszModule);
 		
 		return fn;
 	}
@@ -166,16 +162,14 @@ public:
 		CreateInterfaceFn fn = (CreateInterfaceFn)dlsym(m_hModule, "CreateInterface");
 		
 		if (!fn)
-			ExitError("Could not find CreateInterface in %s\n", m_pszModule);
+			ExitError("Could not find CreateInterface in %s", m_pszModule);
 			
 		void *pInterface = fn(name, nullptr);
 
 		if (!pInterface)
 		{
-			ExitError("Could not find %s in %s\n", name, m_pszModule);
+			ExitError("Could not find %s in %s", name, m_pszModule);
 		}
-
-		printf("Found interface %s in %s\n", name, m_pszModule);
 
 		return (T)pInterface;
 	}

@@ -31,6 +31,7 @@
 #include <cstring>
 #include <fmt/format.h>
 #include "metadata_stringifier.h"
+#include <spdlog/spdlog.h>
 
 namespace Dumpers::Schemas
 {
@@ -51,6 +52,7 @@ void OutputMetadataEntry(const SchemaMetadataEntryData_t& entry, std::ofstream& 
 
 void DumpClasses(CSchemaSystemTypeScope* typeScope, std::filesystem::path schemaPath, std::map<std::string, std::unordered_set<std::string>>& foundFiles)
 {
+	spdlog::info("Dumping schema classes");
 	const auto& classes = typeScope->m_ClassBindings;
 
 	UtlTSHashHandle_t* handles = new UtlTSHashHandle_t[classes.Count()];
@@ -107,6 +109,7 @@ void DumpClasses(CSchemaSystemTypeScope* typeScope, std::filesystem::path schema
 
 void DumpEnums(CSchemaSystemTypeScope* typeScope, std::filesystem::path schemaPath, std::map<std::string, std::unordered_set<std::string>>& foundFiles)
 {
+	spdlog::info("Dumping schema enums");
 	const auto& enums = typeScope->m_EnumBindings;
 
 	UtlTSHashHandle_t* handles = new UtlTSHashHandle_t[enums.Count()];
@@ -184,6 +187,7 @@ void DumpTypeScope(CSchemaSystemTypeScope* typeScope, std::filesystem::path sche
 
 void Dump()
 {
+	spdlog::info("Dumping schemasystem");
 	auto schemaSystem = Interfaces::schemaSystem;
 
 	const auto& typeScopes = schemaSystem->m_TypeScopes;
@@ -207,7 +211,7 @@ void Dump()
 
 		if (entry.is_directory() && !isInMap)
 		{
-			printf("Removing %s\n", entry.path().generic_string().c_str());
+			spdlog::info("Removing orphan schema folder {}", entry.path().generic_string());
 			std::filesystem::remove_all(entry.path());
 		}
 		else if (isInMap)
@@ -219,7 +223,7 @@ void Dump()
 
 				if (filesSet.find(typeScopePath.path().stem().string()) == filesSet.end())
 				{
-					printf("Removing %s\n", typeScopePath.path().generic_string().c_str());
+					spdlog::info("Removing orphan schema file {}", typeScopePath.path().generic_string());
 					std::filesystem::remove(typeScopePath.path());
 				}
 			}

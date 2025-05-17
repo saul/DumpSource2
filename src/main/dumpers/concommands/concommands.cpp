@@ -32,6 +32,7 @@
 #include <fstream>
 #include <vector>
 #include <iostream>
+#include <spdlog/spdlog.h>
 
 namespace Dumpers::ConCommands
 {
@@ -249,6 +250,7 @@ std::string EscapeDescription(std::string str)
 
 void DumpConVars()
 {
+	spdlog::info("Dumping convars");
 	std::vector<ConVarRefAbstract> convars;
 	// there's always gonna be a lot of convars, let's save some reallocations
 	convars.reserve(1000);
@@ -285,6 +287,7 @@ void DumpConVars()
 
 void DumpCommands()
 {
+	spdlog::info("Dumping commands");
 	std::vector<ConCommandRef> commands;
 	// there's always gonna be a lot of commands, let's save some reallocations
 	commands.reserve(1000);
@@ -321,6 +324,7 @@ void DumpCommands()
 
 void Dump()
 {
+	spdlog::debug("Removing default value from cl_color");
 	// cl_color has a random default value on each start.
 	if (ConVarRefAbstract cvar("cl_color"); cvar.IsValidRef())
 	{

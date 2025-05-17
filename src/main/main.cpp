@@ -22,6 +22,8 @@
 #include "interfaces.h"
 #include "globalvariables.h"
 #include "appframework.h"
+#include <spdlog/spdlog.h>
+#include <spdlog/cfg/env.h>
 
 #include "dumpers/concommands/concommands.h"
 #include "dumpers/schemas/schemas.h"
@@ -31,8 +33,11 @@ void Usage()
 	printf("Usage: DumpSource2 <output path>\n");
 }
 
+
 int main(int argc, char** argv)
 {
+	spdlog::cfg::load_env_levels("LOGLEVEL");
+
 	if (argc <= 1)
 	{
 		Usage();
@@ -48,12 +53,13 @@ int main(int argc, char** argv)
 	}
 
 	Globals::stringsIgnoreStream = std::ofstream(Globals::outputPath / ".stringsignore");
+	spdlog::info("Starting Source2Dumper");
 
 	InitializeCoreModules();
 	InitializeAppSystems();
 
-	printf("Dumping\n");
-
 	Dumpers::ConCommands::Dump();
 	Dumpers::Schemas::Dump();
+
+	spdlog::info("Dumped successfully");
 }

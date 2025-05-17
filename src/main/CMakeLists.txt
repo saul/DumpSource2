@@ -12,6 +12,7 @@ function(BUILD_GAME GAME GAME_PATH)
   target_link_libraries(DumpSource2-${GAME} PRIVATE
     HL2SDK-${GAME}
     fmt::fmt
+    spdlog
     ${CMAKE_DL_LIBS}
   )
 

@@ -5,6 +5,7 @@
 #include "utlstring.h"
 #include "bufferstring.h"
 #include "utlbuffer.h"
+#include <spdlog/spdlog.h>
 
 void ExitError(const char* pMsg, ...)
 {
@@ -13,7 +14,7 @@ void ExitError(const char* pMsg, ...)
 	va_start(params, pMsg);
 	vsnprintf(szBuffer, sizeof(szBuffer), pMsg, params);
 	va_end(params);
-	printf("%s", szBuffer);
+	spdlog::critical("{}", szBuffer);
 
 	exit(1);
 }

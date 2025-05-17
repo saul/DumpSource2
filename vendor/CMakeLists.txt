@@ -46,7 +46,10 @@ build_hl2sdk(DOTA hl2sdk-dota)
 # EXTERNAL LIBRARIES
 # ---
 
+set(SPDLOG_FMT_EXTERNAL ON)
+
 add_subdirectory(fmt)
+add_subdirectory(spdlog)
 
 set_target_properties(
 	HL2SDK-CS2
@@ -56,5 +59,6 @@ set_target_properties(
 
 set_target_properties(
 	fmt
+	spdlog
 	PROPERTIES FOLDER Libraries
 )

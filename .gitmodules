@@ -10,3 +10,7 @@
 	path = vendor/hl2sdk-dota
 	url = https://github.com/alliedmodders/hl2sdk
 	shallow = true
+[submodule "vendor/spdlog"]
+	path = vendor/spdlog
+	url = https://github.com/gabime/spdlog
+	shallow = true

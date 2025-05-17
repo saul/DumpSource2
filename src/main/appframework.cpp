@@ -26,6 +26,7 @@
 #include <schemasystem/schemasystem.h>
 #include <fmt/format.h>
 #include <map>
+#include <spdlog/spdlog.h>
 
 static DumperApplication g_Application;
 
@@ -82,7 +83,7 @@ void* AppSystemFactory(const char* pName, int* pReturnCode)
 
 	if (g_factoryMap.find(pName) != g_factoryMap.end())
 	{
-		printf("Connected %s\n", pName);
+		spdlog::trace("Connected {} interface", pName);
 		return g_factoryMap.at(pName);
 	}
 
@@ -106,6 +107,7 @@ void SetConvarValueStub(ICvar* icvar, ConVarRef ref)
 
 void InitializeCoreModules()
 {
+	spdlog::info("Initializing core modules");
 	// Load modules (dlopen)
 	Modules::schemaSystem = std::make_unique<CModule>("", "schemasystem");
 	Modules::tier0 = std::make_unique<CModule>("", "tier0");
@@ -136,6 +138,7 @@ void InitializeCoreModules()
 
 void InitializeAppSystems()
 {
+	spdlog::info("Initializing app systems");
 	for (const auto& appSystem : g_appSystems)
 	{
 #ifndef GAME_CS2
