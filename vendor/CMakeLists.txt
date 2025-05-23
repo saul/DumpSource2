@@ -41,7 +41,8 @@ function(BUILD_HL2SDK GAME GAME_PATH)
 endfunction()
 
 build_hl2sdk(CS2 hl2sdk-cs2)
-build_hl2sdk(DOTA hl2sdk-dota)
+build_hl2sdk(DOTA hl2sdk-deadlock)
+build_hl2sdk(DEADLOCK hl2sdk-deadlock)
 
 # EXTERNAL LIBRARIES
 # ---
@@ -54,6 +55,7 @@ add_subdirectory(spdlog)
 set_target_properties(
 	HL2SDK-CS2
 	HL2SDK-DOTA
+	HL2SDK-DEADLOCK
 	PROPERTIES FOLDER SDK
 )
 
