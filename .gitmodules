@@ -1,18 +1,23 @@
 [submodule "vendor/hl2sdk-cs"]
 	path = vendor/hl2sdk-cs2
 	url = https://github.com/alliedmodders/hl2sdk
-	branch = cs
-	shallow = true
-[submodule "vendor/fmt"]
-	path = vendor/fmt
-	url = https://github.com/fmtlib/fmt
+	branch = cs2
 	shallow = true
 [submodule "vendor/hl2sdk-dota"]
 	path = vendor/hl2sdk-dota
 	url = https://github.com/alliedmodders/hl2sdk
 	branch = dota
 	shallow = true
+[submodule "vendor/hl2sdk-deadlock"]
+	path = vendor/hl2sdk-deadlock
+	url = https://github.com/alliedmodders/hl2sdk
+	branch = deadlock
+	shallow = true
 [submodule "vendor/spdlog"]
 	path = vendor/spdlog
 	url = https://github.com/gabime/spdlog
+	shallow = true
+[submodule "vendor/fmt"]
+	path = vendor/fmt
+	url = https://github.com/fmtlib/fmt
 	shallow = true
