@@ -28,3 +28,17 @@ jobs:
 
     - name: Build
       run: cmake --build build --parallel 4
+
+    - name: Upload artifacts (Linux)
+      if: matrix.os == 'ubuntu-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: dumpsource2-linux
+        path: build/DumpSource2-*
+
+    - name: Upload artifacts (Windows)
+      if: matrix.os == 'windows-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: dumpsource2-windows
+        path: build/DumpSource2-*.exe
