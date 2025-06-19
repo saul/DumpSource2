@@ -116,7 +116,6 @@ inline std::map<std::string, MetadataValueType> g_mapMetadataNameToValue
 	// FLOAT
 	{ "MNetworkMaxValue", MetadataValueType::FLOAT },
 	{ "MNetworkMinValue", MetadataValueType::FLOAT },
-	{ "MParticleCustomFieldDefaultValue", MetadataValueType::FLOAT },
 
 	// VARNAME
 	{ "MNetworkOverride", MetadataValueType::VARNAME },
