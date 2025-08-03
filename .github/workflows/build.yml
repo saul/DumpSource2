@@ -27,7 +27,7 @@ jobs:
       run: cmake -B build -S .
 
     - name: Build
-      run: cmake --build build --parallel 4
+      run: cmake --build build --parallel 4 --config Release
 
     - name: Upload artifacts (Linux)
       if: matrix.os == 'ubuntu-latest'
