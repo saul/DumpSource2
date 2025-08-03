@@ -81,9 +81,15 @@ void CUtlString::Trim(const char*) {
 	// STUB
 }
 
+#ifndef GAME_CS2
 CUtlBuffer::CUtlBuffer(void const*, int, int) {
 	// STUB
 }
+#else
+CUtlBuffer::CUtlBuffer(const void*, int, CUtlBuffer::BufferFlags_t) {
+	// STUB
+}
+#endif
 
 void ConMsg(const char*, ...) {
 	// STUB
@@ -95,13 +101,7 @@ IMemAlloc* g_pMemAlloc = nullptr;
 void Plat_ExitProcess(int) {
 	// STUB
 }
-/*
-#ifdef GAME_CS2
-void Plat_FatalErrorFunc(const tchar* pMsg, ...) {
-	// STUB
-}
-#endif
-*/
+
 bool Plat_IsInDebugSession() {
 	// STUB
 	return false;
@@ -215,5 +215,27 @@ int V_tier0_strlen(const char*) {
 }
 
 void Warning(const char*, ...) {
+	// STUB
+}
+
+void UtlVectorMemory_FailedAllocation(int, int) {
+	// STUB
+}
+
+int	UtlVectorMemory_CalcNewAllocationCount(int, int, int, int) {
+	// STUB
+	return 0;
+}
+
+void* UtlVectorMemory_Alloc(void*, bool, int, int) {
+	// STUB
+	return nullptr;
+}
+
+void V_tier0_memmove(void*, const void*, size_t) {
+	// STUB
+}
+
+void Msg(const tchar* pMsg, ...) {
 	// STUB
 }

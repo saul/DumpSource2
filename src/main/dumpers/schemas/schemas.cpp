@@ -199,8 +199,7 @@ void Dump()
 
 	std::map<std::string, std::unordered_set<std::string>> foundFiles;
 
-	// poggu: this used to be typeScopes.GetNumStrings() but after the 29/07/2025 cs2 engine sync this caused out of bounds access to the internal vector
-	for (auto i = 0; i < typeScopes.m_Vector.Count(); ++i)
+	for (auto i = 0; i < typeScopes.GetNumStrings(); ++i)
 		DumpTypeScope(typeScopes[i], schemaPath, foundFiles);
 
 	DumpTypeScope(schemaSystem->GlobalTypeScope(), schemaPath, foundFiles);

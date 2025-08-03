@@ -19,7 +19,7 @@ function(BUILD_GAME GAME GAME_PATH SDK)
   target_compile_definitions(DumpSource2-${GAME} PRIVATE GAME_${GAME} GAME_PATH="${GAME_PATH}")
 endfunction()
 
-build_game(CS2 csgo DEADLOCK)
+build_game(CS2 csgo CS2)
 build_game(DOTA dota DOTA)
 build_game(DEADLOCK citadel DEADLOCK)
 
