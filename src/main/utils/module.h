@@ -184,6 +184,12 @@ public:
 
 		return nullptr;
 	}
+
+	template <typename T>
+	T GetSymbol(const char* name)
+	{
+		return (T)dlsym(m_hModule, name);
+	}
 #ifdef _WIN32
 	void InitializeSections();
 #endif

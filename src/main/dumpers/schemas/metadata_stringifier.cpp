@@ -34,13 +34,22 @@
 #include <cstring>
 #include <fmt/format.h>
 #include "metadata_stringifier.h"
+#include <modules.h>
 
+class SimpleCUtlString {
+public:
+	const char* Get() {
+		return m_pString;
+	}
+private:
+	const char* m_pString = nullptr;
+};
 
 namespace Dumpers::Schemas
 {
 
 // Determine how and if to output metadata entry value based on it's type.
-std::optional<std::string> GetMetadataValue(const SchemaMetadataEntryData_t& entry)
+std::optional<std::string> GetMetadataValue(const SchemaMetadataEntryData_t& entry, const char* metadataTargetName)
 {
 	if (g_mapMetadataNameToValue.find(entry.m_pszName) != g_mapMetadataNameToValue.end())
 	{
@@ -99,6 +108,35 @@ std::optional<std::string> GetMetadataValue(const SchemaMetadataEntryData_t& ent
 
 				return stringStream.str();
 			}
+			case MetadataValueType::KV3DEFAULTS:
+				typedef void* (*GetKV3DefaultsFn)();
+				typedef int (*SaveKV3AsJsonFn)(void* kv3, SimpleCUtlString& err, SimpleCUtlString& str);
+
+				if (!entry.m_pData || !(*(void**)entry.m_pData) || !strcmp(metadataTargetName, "CastSphereSATParams_t")) return "Could not parse KV3 Defaults";
+
+				auto value = reinterpret_cast<GetKV3DefaultsFn>(*(void**)entry.m_pData)();
+				
+				if (!value) return "Could not parse KV3 Defaults";
+
+#ifdef WIN32
+				static auto SaveKV3AsJson = Modules::tier0->GetSymbol<SaveKV3AsJsonFn>("?SaveKV3AsJSON@@YA_NPEBVKeyValues3@@PEAVCUtlString@@1@Z");
+#else
+				static auto SaveKV3AsJson = Modules::tier0->GetSymbol<SaveKV3AsJsonFn>("_Z13SaveKV3AsJSONPK10KeyValues3P10CUtlStringS3_");	
+#endif
+				if (!SaveKV3AsJson) {
+					spdlog::critical("SaveKV3AsJson not found");
+					return {};
+				}
+
+				SimpleCUtlString err;
+				SimpleCUtlString buf;
+				int res = SaveKV3AsJson(*(void**)value, err, buf);
+
+				if (res) {
+					return buf.Get();
+				}
+
+				return "Could not parse KV3 Defaults";
 		}
 	}
 

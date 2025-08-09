@@ -81,12 +81,12 @@ void CUtlString::Trim(const char*) {
 	// STUB
 }
 
-#ifndef GAME_CS2
-CUtlBuffer::CUtlBuffer(void const*, int, int) {
+#ifndef GAME_DEADLOCK
+CUtlBuffer::CUtlBuffer(const void*, int, CUtlBuffer::BufferFlags_t) {
 	// STUB
 }
 #else
-CUtlBuffer::CUtlBuffer(const void*, int, CUtlBuffer::BufferFlags_t) {
+CUtlBuffer::CUtlBuffer(void const*, int, int) {
 	// STUB
 }
 #endif

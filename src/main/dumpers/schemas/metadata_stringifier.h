@@ -32,6 +32,6 @@ struct CSchemaVarName {
 namespace Dumpers::Schemas
 {
 
-std::optional<std::string> GetMetadataValue(const SchemaMetadataEntryData_t& entry);
+std::optional<std::string> GetMetadataValue(const SchemaMetadataEntryData_t& entry, const char* metadataTargetName);
 
 } // namespace Dumpers::Schemas

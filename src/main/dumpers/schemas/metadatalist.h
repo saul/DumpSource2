@@ -33,7 +33,8 @@ enum class MetadataValueType {
 	INLINE_STRING,
 	INTEGER,
 	FLOAT,
-	VARNAME
+	VARNAME,
+	KV3DEFAULTS
 };
 
 inline std::map<std::string, MetadataValueType> g_mapMetadataNameToValue
@@ -123,6 +124,9 @@ inline std::map<std::string, MetadataValueType> g_mapMetadataNameToValue
 	{ "MNetworkVarTypeOverride", MetadataValueType::VARNAME },
 	{ "MParticleDomainTag", MetadataValueType::VARNAME },
 	{ "MScriptDescription", MetadataValueType::VARNAME },
+
+	// KV3
+	{ "MGetKV3ClassDefaults", MetadataValueType::KV3DEFAULTS }
 };
 
 } // namespace Dumpers::Schemas

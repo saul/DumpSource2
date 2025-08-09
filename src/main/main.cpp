@@ -27,6 +27,7 @@
 
 #include "dumpers/concommands/concommands.h"
 #include "dumpers/schemas/schemas.h"
+#include <modules.h>
 
 void Usage()
 {

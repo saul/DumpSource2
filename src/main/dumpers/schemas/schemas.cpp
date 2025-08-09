@@ -37,14 +37,28 @@
 
 namespace Dumpers::Schemas
 {
-void OutputMetadataEntry(const SchemaMetadataEntryData_t& entry, std::ofstream& output, bool tabulate)
+
+std::string CommentBlock(std::string str)
+{
+	size_t pos = 0;
+	while ((pos = str.find('\n', pos)) != std::string::npos) {
+		str.replace(pos, 1, "\n//");
+		pos += 3;
+	}
+
+	return str;
+}
+
+
+void OutputMetadataEntry(const SchemaMetadataEntryData_t& entry, std::ofstream& output, bool tabulate, const char* metadataTargetName)
 {
 	output << (tabulate ? "\t" : "") << "// " << entry.m_pszName;
 	if (entry.m_pData)
 	{
-		const auto metadataValue = GetMetadataValue(entry);
-		if (metadataValue)
-			output << " = " << *metadataValue;
+		const auto metadataValue = GetMetadataValue(entry, metadataTargetName);
+		if (metadataValue) {
+			output << " = " << CommentBlock(*metadataValue);
+		}
 		else
 			output << " (UNKNOWN FOR PARSER)";
 	}
@@ -76,10 +90,11 @@ void DumpClasses(CSchemaSystemTypeScope* typeScope, std::filesystem::path schema
 		std::ofstream output((schemaPath / classInfo->m_pszProjectName / sanitizedFileName).replace_extension(".h"));
 
 		// Output metadata entries as comments before the class definition
+		spdlog::trace("Dumping class: '{}'", classInfo->m_pszName);
 		for (uint16_t k = 0; k < classInfo->m_nStaticMetadataCount; k++)
 		{
 			const auto& metadataEntry = classInfo->m_pStaticMetadata[k];
-			OutputMetadataEntry(metadataEntry, output, false);
+			OutputMetadataEntry(metadataEntry, output, false, classInfo->m_pszName);
 		}
 
 		output << "class " << classInfo->m_pszName;
@@ -93,11 +108,12 @@ void DumpClasses(CSchemaSystemTypeScope* typeScope, std::filesystem::path schema
 		for (uint16_t k = 0; k < classInfo->m_nFieldCount; k++)
 		{
 			const auto& field = classInfo->m_pFields[k];
+			spdlog::trace("Dumping field: '{}' for class: '{}'", field.m_pszName, classInfo->m_pszName);
 			// Output metadata entires as comments before the field definition
 			for (uint16_t l = 0; l < field.m_nStaticMetadataCount; l++)
 			{
 				const auto& metadataEntry = field.m_pStaticMetadata[l];
-				OutputMetadataEntry(metadataEntry, output, true);
+				OutputMetadataEntry(metadataEntry, output, true, classInfo->m_pszName);
 			}
 
 			output << "\t" << field.m_pType->m_sTypeName.String() << " " << field.m_pszName << ";\n";
@@ -134,7 +150,7 @@ void DumpEnums(CSchemaSystemTypeScope* typeScope, std::filesystem::path schemaPa
 		for (uint16_t k = 0; k < enumInfo->m_nStaticMetadataCount; k++)
 		{
 			const auto& metadataEntry = enumInfo->m_pStaticMetadata[k];
-			OutputMetadataEntry(metadataEntry, output, false);
+			OutputMetadataEntry(metadataEntry, output, false, enumInfo->m_pszName);
 		}
 
 		output << "enum " << enumInfo->m_pszName << " : ";
@@ -167,7 +183,7 @@ void DumpEnums(CSchemaSystemTypeScope* typeScope, std::filesystem::path schemaPa
 			for (uint16_t l = 0; l < field.m_nStaticMetadataCount; l++)
 			{
 				const auto& metadataEntry = field.m_pStaticMetadata[l];
-				OutputMetadataEntry(metadataEntry, output, true);
+				OutputMetadataEntry(metadataEntry, output, true, field.m_pszName);
 			}
 
 			output << "\t" << field.m_pszName << " = " << field.m_nValue << ",\n";
