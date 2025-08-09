@@ -54,7 +54,6 @@ std::vector<AppSystemInfo> g_appSystems{
 	{ false, "meshsystem", MESHSYSTEM_INTERFACE_VERSION, false },
 	{ false, "networksystem", NETWORKSYSTEM_INTERFACE_VERSION, false}, // can't connect on linux cuz of missing gameinfo	in IApplication
 	{ false, "panorama", PANORAMAUIENGINE_INTERFACE_VERSION },
-	// crashes on kv3defaults, exclude crashy fields/classes from kv3defaults dumps
 	{ false, "particles", PARTICLESYSTEMMGR_INTERFACE_VERSION, false }, // needs renderdevice interface
 	{ false, "pulse_system", PULSESYSTEM_INTERFACE_VERSION },
 #ifdef _WIN32
@@ -65,7 +64,6 @@ std::vector<AppSystemInfo> g_appSystems{
 	{ false, "scenefilecache", "SceneFileCache002" },
 	{ false, "scenesystem", SCENEUTILS_INTERFACE_VERSION },
 	{ false, "soundsystem", SOUNDOPSYSTEMEDIT_INTERFACE_VERSION },
-	// crashes on kv3defaults, exclude crashy fields/classes from kv3defaults dumps
 	{ false, "vphysics2", VPHYSICS2HANDLE_INTERFACE_VERSION },
 	{ false, "worldrenderer", WORLD_RENDERER_MGR_INTERFACE_VERSION },
 };
