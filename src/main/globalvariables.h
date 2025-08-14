@@ -25,6 +25,6 @@
 namespace Globals {
 
 	inline std::filesystem::path outputPath;
-	inline std::ofstream stringsIgnoreStream;
+	inline std::stringstream stringsIgnoreStream;
 
 } // namespace Interfaces

@@ -53,14 +53,19 @@ int main(int argc, char** argv)
 		return 0;
 	}
 
-	Globals::stringsIgnoreStream = std::ofstream(Globals::outputPath / ".stringsignore");
 	spdlog::info("Starting Source2Dumper");
 
 	InitializeCoreModules();
 	InitializeAppSystems();
 
+	// TODO: remove after cvar interface is fixed
+#ifndef GAME_CS2
 	Dumpers::ConCommands::Dump();
+#endif
 	Dumpers::Schemas::Dump();
+
+	std::ofstream file(Globals::outputPath / ".stringsignore");
+	file << Globals::stringsIgnoreStream.str();
 
 	spdlog::info("Dumped successfully");
 

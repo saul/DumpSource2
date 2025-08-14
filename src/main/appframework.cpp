@@ -94,6 +94,8 @@ void* AppSystemFactory(const char* pName, int* pReturnCode)
 // which then calls convar change handlers that try to load main scenesystem appsystem
 void SetConvarValueStub(ICvar* icvar, ConVarRef ref)
 {
+// TODO: remove after cvar interface is fixed
+#ifndef GAME_CS2
 	ConVarRefAbstract cvar(ref);
 	if (!cvar.IsConVarDataValid())
 		return;
@@ -103,6 +105,7 @@ void SetConvarValueStub(ICvar* icvar, ConVarRef ref)
 	{
 		cvar.SetBool(false);
 	}
+#endif
 }
 
 void InitializeCoreModules()
@@ -148,11 +151,14 @@ void InitializeAppSystems()
 
 		std::string path = appSystem.gameBin ? fmt::format("../../{}/bin/{}", GAME_PATH, PLATFORM_FOLDER) : "";
 
+		spdlog::trace("Creating module {}", path);
 		CModule module(path.c_str(), appSystem.moduleName);
 
+		spdlog::trace("Finding interface for module {}", path);
 		auto interface = module.FindInterface<IAppSystem*>(appSystem.interfaceVersion.c_str());
 
 		g_factoryMap[appSystem.interfaceVersion] = interface;
+		spdlog::trace("Connecting app system for module {}", path);
 		interface->Connect(&AppSystemFactory);
 		if (appSystem.connect)
 		{
