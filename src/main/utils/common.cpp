@@ -81,7 +81,7 @@ void CUtlString::Trim(const char*) {
 	// STUB
 }
 
-#ifndef GAME_DEADLOCK
+#ifdef GAME_CS2
 CUtlBuffer::CUtlBuffer(const void*, int, CUtlBuffer::BufferFlags_t) {
 	// STUB
 }
