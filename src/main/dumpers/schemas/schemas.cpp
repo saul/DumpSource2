@@ -215,7 +215,8 @@ void Dump()
 
 	std::map<std::string, std::unordered_set<std::string>> foundFiles;
 
-	for (auto i = 0; i < typeScopes.GetNumStrings(); ++i)
+	// still can't use GetNumStrings on dota
+	for (auto i = 0; i < typeScopes.m_Vector.Count(); ++i)
 		DumpTypeScope(typeScopes[i], schemaPath, foundFiles);
 
 	DumpTypeScope(schemaSystem->GlobalTypeScope(), schemaPath, foundFiles);
