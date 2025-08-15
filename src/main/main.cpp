@@ -58,10 +58,7 @@ int main(int argc, char** argv)
 	InitializeCoreModules();
 	InitializeAppSystems();
 
-	// TODO: remove after cvar interface is fixed
-#ifndef GAME_CS2
 	Dumpers::ConCommands::Dump();
-#endif
 	Dumpers::Schemas::Dump();
 
 	std::ofstream file(Globals::outputPath / ".stringsignore");

@@ -94,8 +94,6 @@ void* AppSystemFactory(const char* pName, int* pReturnCode)
 // which then calls convar change handlers that try to load main scenesystem appsystem
 void SetConvarValueStub(ICvar* icvar, ConVarRef ref)
 {
-// TODO: remove after cvar interface is fixed
-#ifndef GAME_CS2
 	ConVarRefAbstract cvar(ref);
 	if (!cvar.IsConVarDataValid())
 		return;
@@ -105,7 +103,6 @@ void SetConvarValueStub(ICvar* icvar, ConVarRef ref)
 	{
 		cvar.SetBool(false);
 	}
-#endif
 }
 
 void InitializeCoreModules()
