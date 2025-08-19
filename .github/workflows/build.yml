@@ -13,32 +13,74 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        submodules: 'true'
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'true'
 
-    - name: Setup CMake
-      uses: lukka/get-cmake@latest
+      - name: Setup CMake
+        uses: lukka/get-cmake@latest
 
-    - name: Create build directory
-      run: mkdir build
+      - name: Create build directory
+        run: mkdir build
 
-    - name: Configure CMake
-      run: cmake -B build -S .
+      - name: Configure CMake
+        run: cmake -B build -S .
 
-    - name: Build
-      run: cmake --build build --parallel 4 --config Release
+      - name: Build
+        run: cmake --build build --parallel 4 --config Release
 
-    - name: Upload artifacts (Linux)
-      if: matrix.os == 'ubuntu-latest'
-      uses: actions/upload-artifact@v4
-      with:
-        name: dumpsource2-linux
-        path: build/DumpSource2-*
+      - name: Upload artifacts (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dumpsource2-linux
+          path: build/DumpSource2-*
 
-    - name: Upload artifacts (Windows)
-      if: matrix.os == 'windows-latest'
-      uses: actions/upload-artifact@v4
-      with:
-        name: dumpsource2-windows
-        path: build/Release/DumpSource2-*.exe
+      - name: Upload artifacts (Windows)
+        if: matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dumpsource2-windows
+          path: build/Release/DumpSource2-*.exe
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dumpsource2-linux
+          path: ./linux-build
+
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dumpsource2-windows
+          path: ./windows-build
+
+      - name: Generate timestamp version
+        id: timestamp
+        run: |
+          TIMESTAMP=$(date -u +%Y%m%d-%H%M)
+          echo "version=$TIMESTAMP" >> $GITHUB_OUTPUT
+          echo "Generated version: $TIMESTAMP"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.timestamp.outputs.version }}
+          name: Release ${{ steps.timestamp.outputs.version }}
+          body: |
+            Automated release created on $(date -u +"%Y-%m-%d %H:%M UTC")
+            
+            Built from commit: ${{ github.sha }}
+          files: |
+            linux-build/*
+            windows-build/*
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
