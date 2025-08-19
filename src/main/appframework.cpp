@@ -37,7 +37,6 @@ struct AppSystemInfo
 	bool gameBin;
 	const char* moduleName;
 	std::string interfaceVersion;
-	bool connect = true;
 	uint64_t flags = 0;
 };
 
@@ -47,14 +46,14 @@ std::vector<AppSystemInfo> g_appSystems{
 	//{ true, "client", "Source2ClientConfig001" },
 	{ false, "engine2", SOURCE2ENGINETOSERVER_INTERFACE_VERSION },
 	{ true, "host", "GameSystem2HostHook" },
-	{ true, "matchmaking", MATCHFRAMEWORK_INTERFACE_VERSION, true, CS2_ONLY },
+	{ true, "matchmaking", MATCHFRAMEWORK_INTERFACE_VERSION, CS2_ONLY },
 	{ true, "server", SOURCE2SERVERCONFIG_INTERFACE_VERSION },
 	{ false, "animationsystem", ANIMATIONSYSTEM_INTERFACE_VERSION },
 	{ false, "materialsystem2", TEXTLAYOUT_INTERFACE_VERSION },
-	{ false, "meshsystem", MESHSYSTEM_INTERFACE_VERSION, false },
-	{ false, "networksystem", NETWORKSYSTEM_INTERFACE_VERSION, false}, // can't connect on linux cuz of missing gameinfo	in IApplication
+	{ false, "meshsystem", MESHSYSTEM_INTERFACE_VERSION},
+	{ false, "networksystem", NETWORKSYSTEM_INTERFACE_VERSION},
 	//{ false, "panorama", PANORAMAUIENGINE_INTERFACE_VERSION },
-	{ false, "particles", PARTICLESYSTEMMGR_INTERFACE_VERSION, false }, // needs renderdevice interface
+	{ false, "particles", PARTICLESYSTEMMGR_INTERFACE_VERSION },
 	{ false, "pulse_system", PULSESYSTEM_INTERFACE_VERSION },
 #ifdef _WIN32
 	{ false, "rendersystemdx11", RENDER_UTILS_INTERFACE_VERSION },
@@ -129,19 +128,12 @@ void InitializeAppSystems()
 		auto interface = module.FindInterface<IAppSystem*>(appSystem.interfaceVersion.c_str());
 
 		g_factoryMap[appSystem.interfaceVersion] = interface;
-		spdlog::trace("Connecting app system for module {}", path);
-		//interface->Connect(&AppSystemFactory);
-		// if (appSystem.connect)
-		// {
-		// 	//interface->Init();
-		// }
-		// else
-		{
-			// We can't connect this interface, let's at least dump schemas
-			typedef void* (*InstallSchemaBindings)(const char* interfaceName, void* pSchemaSystem);
-			InstallSchemaBindings fn = (InstallSchemaBindings)dlsym(module.m_hModule, "InstallSchemaBindings");
 
-			fn(SCHEMASYSTEM_INTERFACE_VERSION, Interfaces::schemaSystem);
-		}
+		spdlog::trace("Connecting schema bindings for module {}", path);
+
+		typedef void* (*InstallSchemaBindings)(const char* interfaceName, void* pSchemaSystem);
+		InstallSchemaBindings fn = (InstallSchemaBindings)dlsym(module.m_hModule, "InstallSchemaBindings");
+
+		fn(SCHEMASYSTEM_INTERFACE_VERSION, Interfaces::schemaSystem);
 	}
 }

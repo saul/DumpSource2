@@ -30,6 +30,7 @@
 #include <spdlog/spdlog.h>
 #include <set>
 #include "json_generator.h"
+#include "utils/plat.h"
 
 #define private public
 #include "schemasystem/schemasystem.h"
@@ -37,12 +38,13 @@
 
 namespace Dumpers::Schemas {
     struct CSchemaVarName {
-        const char* m_pszName;
-        const char* m_pszType;
+        const char *m_pszName;
+        const char *m_pszType;
     };
 
     void WriteMetadataValue(const SchemaMetadataEntryData_t &entry, json::generator_t::self_ref builder) {
         if (g_mapMetadataNameToValue.find(entry.m_pszName) == g_mapMetadataNameToValue.end()) {
+            builder.json_null_value();
             return;
         }
 
@@ -107,7 +109,7 @@ namespace Dumpers::Schemas {
 
 
     void WriteMetadataEntry(const SchemaMetadataEntryData_t &entry, json::generator_t::self_ref builder) {
-        builder.begin_json_object_value();
+        builder.begin_json_object();
         builder.json_property_name("name").json_string_value(entry.m_pszName);
 
         if (strcmp(entry.m_pszName, "MResourceTypeForInfoType") == 0) {
@@ -116,8 +118,11 @@ namespace Dumpers::Schemas {
         }
 
         if (entry.m_pData) {
+            builder.json_property_name("value");
             WriteMetadataValue(entry, builder);
         }
+
+        builder.end_json_object();
     }
 
     void WriteTypeJson(json::generator_t::self_ref builder, CSchemaType *current_type) {
@@ -169,7 +174,8 @@ namespace Dumpers::Schemas {
             builder.json_property_name(classInfo->m_pszName).begin_json_object_value();
 
             if (classInfo->m_nBaseClassCount >= 1) {
-                builder.json_property_name("parent").json_string_value(classInfo->m_pBaseClasses[0].m_pClass->m_pszName);
+                builder.json_property_name("parent").
+                        json_string_value(classInfo->m_pBaseClasses[0].m_pClass->m_pszName);
             }
 
             builder.json_property_name("metadata").begin_json_array_value();
@@ -216,7 +222,7 @@ namespace Dumpers::Schemas {
                     }
                 }
 
-                builder.begin_json_object_value().json_property_name("name").json_string_value(field.m_pszName);
+                builder.begin_json_object().json_property_name("name").json_string_value(field.m_pszName);
 
                 builder.json_property_name("type");
 
@@ -227,7 +233,7 @@ namespace Dumpers::Schemas {
                 // Output metadata entries as comments before the field definition
                 for (uint16_t l = 0; l < field.m_nStaticMetadataCount; l++) {
                     const auto &metadataEntry = field.m_pStaticMetadata[l];
-                    if (strcmp(metadataEntry.m_pszName, "MNetworkEnable")) {
+                    if (strcmp(metadataEntry.m_pszName, "MNetworkEnable") != 0) {
                         WriteMetadataEntry(metadataEntry, builder);
                     }
                 }
@@ -263,7 +269,7 @@ namespace Dumpers::Schemas {
             builder.json_property_name("items").begin_json_array_value();
             for (int enumIdx = 0; enumIdx < enumInfo->m_nEnumeratorCount; ++enumIdx) {
                 const auto &field = enumInfo->m_pEnumerators[enumIdx];
-                builder.begin_json_object_value()
+                builder.begin_json_object()
                         .json_property_name("name")
                         .json_string_value(field.m_pszName)
                         .json_property_name("value")
@@ -274,12 +280,20 @@ namespace Dumpers::Schemas {
 
             builder.end_json_object();
         }
+
+        builder.end_json_object();
     }
 
 
     void DumpTypeScope(CSchemaSystemTypeScope *typeScope) {
-        const auto outPath = Globals::outputPath / fmt::format("{}.json", typeScope->m_szScopeName);
-        spdlog::info("Writing {}...", typeScope->m_szScopeName, outPath.c_str());
+        std::string scopeName = typeScope->m_szScopeName;
+        if (scopeName.starts_with(MODULE_PREFIX))
+            scopeName = scopeName.substr(strlen(MODULE_PREFIX), scopeName.length() - strlen(MODULE_PREFIX));
+        if (scopeName.ends_with(MODULE_EXT))
+            scopeName = scopeName.substr(0, scopeName.length() - strlen(MODULE_EXT));
+
+        const auto outPath = Globals::outputPath / fmt::format("{}.json", scopeName);
+        spdlog::info("Writing {}...", outPath.generic_string());
 
         auto builder = json::get();
 
@@ -297,7 +311,7 @@ namespace Dumpers::Schemas {
 
     void Dump() {
         if (!std::filesystem::exists(Globals::outputPath)) {
-            spdlog::info("Creating output directory: {}", Globals::outputPath.c_str());
+            spdlog::info("Creating output directory: {}", Globals::outputPath.generic_string());
             std::filesystem::create_directories(Globals::outputPath);
         }
 

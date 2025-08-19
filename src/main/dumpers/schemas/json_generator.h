@@ -31,7 +31,9 @@ namespace json {
         }
     public:
         self_ref begin_json_object() {
-            write_comma_if_needed();
+            if (_tabs_count > 0) {
+                write_comma_if_needed();
+            }
             push_line("{");
             inc_tabs_count(kTabsPerBlock);
             _block_stack.push({block_type_t::object, false});
@@ -39,7 +41,7 @@ namespace json {
         }
 
         self_ref begin_json_object_value() {
-            _stream << "{" << std::endl;
+            _stream << "{";
             inc_tabs_count(kTabsPerBlock);
             _block_stack.push({block_type_t::object, false});
             return *this;
@@ -47,6 +49,7 @@ namespace json {
 
         self_ref end_json_object() {
             dec_tabs_count(kTabsPerBlock);
+            _stream << std::endl;
             push_line("}");
             if (!_block_stack.empty()) {
                 _block_stack.pop();
@@ -56,7 +59,7 @@ namespace json {
         }
 
         self_ref begin_json_array_value() {
-            _stream << "[" << std::endl;
+            _stream << "[";
             inc_tabs_count(kTabsPerBlock);
             _block_stack.push({block_type_t::array, false});
             return *this;
@@ -64,6 +67,7 @@ namespace json {
 
         self_ref end_json_array() {
             dec_tabs_count(kTabsPerBlock);
+            _stream << std::endl;
             push_line("]");
             if (!_block_stack.empty()) {
                 _block_stack.pop();
@@ -74,18 +78,24 @@ namespace json {
 
         self_ref json_property_name(const std::string& str) {
             write_comma_if_needed();
-            return push_line("\"" + escape_json_string(str) + "\": ", false);
+            return push_line("\"" + escape_json_string(str) + "\": ");
         }
 
         self_ref json_string_value(const std::string& str) {
-            _stream << "\"" + escape_json_string(str) + "\"" << std::endl;
+            _stream << "\"" + escape_json_string(str) + "\"";
+            mark_item_written();
+            return *this;
+        }
+
+        self_ref json_null_value() {
+            _stream << "null";
             mark_item_written();
             return *this;
         }
 
         template <typename T>
         self_ref json_literal_value(T value) {
-            _stream << fmt::format("{}", value) << std::endl;
+            _stream << fmt::format("{}", value);
             mark_item_written();
             return *this;
         }
@@ -95,12 +105,10 @@ namespace json {
             return _stream.str();
         }
 
-        self_ref push_line(const std::string& line, bool move_cursor_to_next_line = true) {
+        self_ref push_line(const std::string& line) {
             for (std::size_t i = 0; i < _tabs_count; i++)
                 _stream << kTabSym;
             _stream << line;
-            if (move_cursor_to_next_line)
-                _stream << std::endl;
             return *this;
         }
         
@@ -127,9 +135,6 @@ namespace json {
                     break;
                 case '"':
                     ss << "\\\"";
-                    break;
-                case '/':
-                    ss << "\\/";
                     break;
                 case '\b':
                     ss << "\\b";
