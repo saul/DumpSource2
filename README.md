@@ -1,30 +1,28 @@
 # DumpSource2
 
-A C++ Application that offline dumps schema bindings and convars/commands for [GameTracking](https://github.com/SteamDatabase/GameTracking) purposes.
-
-[See this file in GameTracking on how its used.](https://github.com/SteamDatabase/GameTracking/blob/master/tools/dump_source2.sh)
+A C++ application that offline dumps Source 2 schema bindings. Heavily based on [ValveResourceFormat/DumpSource2](https://github.com/ValveResourceFormat/DumpSource2). 
 
 ## Usage
 
-Run DumpSource2 from the rootbin folder of a source 2 game. `game/bin/win64`
+Run DumpSource2 from the rootbin folder of a Source 2 game:
 
-`DumpSource2 <output path>`
+```
+cd "C:\Program Files (x86)\Steam\steamapps\common\Counter-Strike Global Offensive\game\bin\win64"
+. "C:\Code\DumpSource2\build\Debug\DumpSource2-CS2.exe" "C:\Code\demofile-net\src\DemoFile.Game.Cs\Schema"
+```
 
-- `output path` - absolute or relative path to a folder where output should be stored
+## Compilation
 
-
-# Compilation
-
-## Windows
+### Windows
 
 ```sh
 mkdir build
 cd build
 cmake ..
-# Open VS solution and compile from VS
+msbuild ALL_BUILD.vcxproj
 ```
 
-## Linux
+### Linux
 ```sh
 mkdir build
 cd build
