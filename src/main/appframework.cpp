@@ -44,7 +44,7 @@ struct AppSystemInfo
 std::vector<AppSystemInfo> g_appSystems{
 	{ false, "filesystem_stdio", FILESYSTEM_INTERFACE_VERSION },
 	{ false, "resourcesystem", RESOURCESYSTEM_INTERFACE_VERSION },
-	{ true, "client", "Source2ClientConfig001" },
+	//{ true, "client", "Source2ClientConfig001" },
 	{ false, "engine2", SOURCE2ENGINETOSERVER_INTERFACE_VERSION },
 	{ true, "host", "GameSystem2HostHook" },
 	{ true, "matchmaking", MATCHFRAMEWORK_INTERFACE_VERSION, true, CS2_ONLY },
@@ -53,7 +53,7 @@ std::vector<AppSystemInfo> g_appSystems{
 	{ false, "materialsystem2", TEXTLAYOUT_INTERFACE_VERSION },
 	{ false, "meshsystem", MESHSYSTEM_INTERFACE_VERSION, false },
 	{ false, "networksystem", NETWORKSYSTEM_INTERFACE_VERSION, false}, // can't connect on linux cuz of missing gameinfo	in IApplication
-	{ false, "panorama", PANORAMAUIENGINE_INTERFACE_VERSION },
+	//{ false, "panorama", PANORAMAUIENGINE_INTERFACE_VERSION },
 	{ false, "particles", PARTICLESYSTEMMGR_INTERFACE_VERSION, false }, // needs renderdevice interface
 	{ false, "pulse_system", PULSESYSTEM_INTERFACE_VERSION },
 #ifdef _WIN32
@@ -90,21 +90,6 @@ void* AppSystemFactory(const char* pName, int* pReturnCode)
 	return nullptr;
 }
 
-// SceneUtils_001 tries to set convars on init
-// which then calls convar change handlers that try to load main scenesystem appsystem
-void SetConvarValueStub(ICvar* icvar, ConVarRef ref)
-{
-	ConVarRefAbstract cvar(ref);
-	if (!cvar.IsConVarDataValid())
-		return;
-
-	// it also crashes if r_dopixelvisibility is true
-	if (!strcmp("r_dopixelvisibility", cvar.GetName()))
-	{
-		cvar.SetBool(false);
-	}
-}
-
 void InitializeCoreModules()
 {
 	spdlog::info("Initializing core modules");
@@ -123,17 +108,6 @@ void InitializeCoreModules()
 
 	Interfaces::schemaSystem->Connect(&AppSystemFactory);
 	Interfaces::schemaSystem->Init();
-
-	auto vtb = *((void***)Interfaces::cvar);
-
-#ifdef _WIN32
-	DWORD _;
-	VirtualProtect(vtb + 14, 8, PAGE_EXECUTE_READWRITE, &_);
-	*(vtb + 14) = &SetConvarValueStub;
-#else
-	void* patchBytes = (void*)&SetConvarValueStub;
-	Plat_WriteMemory(vtb + 14, (uint8_t*)&patchBytes, 8);
-#endif
 }
 
 void InitializeAppSystems()
@@ -156,12 +130,12 @@ void InitializeAppSystems()
 
 		g_factoryMap[appSystem.interfaceVersion] = interface;
 		spdlog::trace("Connecting app system for module {}", path);
-		interface->Connect(&AppSystemFactory);
-		if (appSystem.connect)
-		{
-			interface->Init();
-		}
-		else
+		//interface->Connect(&AppSystemFactory);
+		// if (appSystem.connect)
+		// {
+		// 	//interface->Init();
+		// }
+		// else
 		{
 			// We can't connect this interface, let's at least dump schemas
 			typedef void* (*InstallSchemaBindings)(const char* interfaceName, void* pSchemaSystem);

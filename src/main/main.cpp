@@ -25,7 +25,6 @@
 #include <spdlog/spdlog.h>
 #include <spdlog/cfg/env.h>
 
-#include "dumpers/concommands/concommands.h"
 #include "dumpers/schemas/schemas.h"
 #include <modules.h>
 
@@ -58,11 +57,7 @@ int main(int argc, char** argv)
 	InitializeCoreModules();
 	InitializeAppSystems();
 
-	Dumpers::ConCommands::Dump();
 	Dumpers::Schemas::Dump();
-
-	std::ofstream file(Globals::outputPath / ".stringsignore");
-	file << Globals::stringsIgnoreStream.str();
 
 	spdlog::info("Dumped successfully");
 
