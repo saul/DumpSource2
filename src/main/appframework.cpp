@@ -63,7 +63,7 @@ std::vector<AppSystemInfo> g_appSystems{
 	{ false, "scenefilecache", "SceneFileCache002" },
 	{ false, "scenesystem", SCENEUTILS_INTERFACE_VERSION },
 	{ false, "soundsystem", SOUNDOPSYSTEMEDIT_INTERFACE_VERSION },
-	{ false, "vphysics2", VPHYSICS2HANDLE_INTERFACE_VERSION },
+	//{ false, "vphysics2", VPHYSICS2HANDLE_INTERFACE_VERSION },
 	{ false, "worldrenderer", WORLD_RENDERER_MGR_INTERFACE_VERSION },
 };
 

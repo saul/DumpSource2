@@ -163,7 +163,9 @@ namespace Dumpers::Schemas {
 
 				FOR_EACH_MAP(typeScope->m_DeclaredClasses.m_Map, iter)
 				{
-					const auto classInfo = typeScope->m_DeclaredClasses.m_Map.Element(iter)->m_pClassInfo;
+					  const auto classInfo = typeScope->m_DeclaredClasses.m_Map.Element(iter)->m_pClassInfo;
+						if (classInfo == nullptr)
+							  continue;
 
             spdlog::trace("Dumping class: '{}'", classInfo->m_pszName);
 
@@ -180,20 +182,6 @@ namespace Dumpers::Schemas {
             std::set<std::string> networkVarNames;
             for (uint16_t k = 0; k < classInfo->m_nStaticMetadataCount; k++) {
                 const auto &metadataEntry = classInfo->m_pStaticMetadata[k];
-
-                // Keep track of all network vars
-                if (strcmp(metadataEntry.m_pszName, "MNetworkVarNames") == 0) {
-                    auto value = static_cast<CSchemaVarName *>(metadataEntry.m_pData);
-                    networkVarNames.insert(value->m_pszName);
-
-                    // don't write var names - too verbose
-                    continue;
-                }
-
-                if (strcmp(metadataEntry.m_pszName, "MNetworkVarsAtomic") == 0) {
-                    isAtomic = true;
-                }
-
                 WriteMetadataEntry(metadataEntry, builder);
             }
             builder.end_json_array();
@@ -203,20 +191,6 @@ namespace Dumpers::Schemas {
             for (uint16_t k = 0; k < classInfo->m_nFieldCount; k++) {
                 const auto &field = classInfo->m_pFields[k];
                 spdlog::trace("Dumping field: '{}' for class: '{}'", field.m_pszName, classInfo->m_pszName);
-
-                if (!networkVarNames.contains(field.m_pszName) && !isAtomic) {
-                    bool hasNetworkEnable = false;
-                    for (auto j = 0; j < field.m_nStaticMetadataCount; j++) {
-                        if (strcmp(field.m_pStaticMetadata[j].m_pszName, "MNetworkEnable") == 0) {
-                            hasNetworkEnable = true;
-                            break;
-                        }
-                    }
-
-                    if (!hasNetworkEnable) {
-                        continue;
-                    }
-                }
 
                 builder.begin_json_object().json_property_name("name").json_string_value(field.m_pszName);
 
@@ -253,6 +227,8 @@ namespace Dumpers::Schemas {
 				FOR_EACH_MAP(typeScope->m_DeclaredEnums.m_Map, iter)
 				{
 						const auto enumInfo = typeScope->m_DeclaredEnums.m_Map.Element(iter)->m_pEnumInfo;
+						if (enumInfo == nullptr)
+							continue;
 
             builder.json_property_name(enumInfo->m_pszName).begin_json_object_value();
 

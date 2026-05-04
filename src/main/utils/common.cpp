@@ -21,82 +21,10 @@ void ExitError(const char* pMsg, ...)
 
 /* tier0 stub */
 
-void CThreadSpinRWLock::LockForRead(const char* pFileName, int nLine)
-{
-	// STUB
-}
-
-void CThreadSpinRWLock::UnlockRead(const char* pFileName, int nLine)
-{
-	// STUB
-}
-
 LoggingResponse_t LoggingSystem_LogAssert(const char* pMessageFormat, ...)
 {
 	return LR_ABORT;
 }
-
-bool CUtlString::operator==(const CUtlString& src) const {
-	// STUB
-	return false;
-}
-
-const char* CBufferString::Insert(int, char const *, int, bool) {
-	// STUB
-	return nullptr;
-}
-
-int CBufferString::AppendFormat(char const*, ...) {
-	// STUB
-	return 0;
-}
-
-int CBufferString::Format(char const*, ...) {
-	// STUB
-	return 0;
-}
-
-void CBufferString::Purge(int) {
-	// STUB
-}
-
-int CUtlBuffer::ParseToken(struct characterset_t const*, char*, int, bool) {
-	// STUB
-	return 0;
-}
-
-void CUtlString::Purge() {
-	// STUB
-}
-
-void CUtlString::Set(const char*) {
-	// STUB
-}
-
-void CUtlString::SetDirect(const char*, int) {
-	// STUB
-}
-
-void CUtlString::Trim(const char*) {
-	// STUB
-}
-
-#ifdef GAME_CS2
-CUtlBuffer::CUtlBuffer(const void*, int, CUtlBuffer::BufferFlags_t) {
-	// STUB
-}
-#else
-CUtlBuffer::CUtlBuffer(void const*, int, int) {
-	// STUB
-}
-#endif
-
-void ConMsg(const char*, ...) {
-	// STUB
-}
-
-// STUB
-IMemAlloc* g_pMemAlloc = nullptr;
 
 void Plat_ExitProcess(int) {
 	// STUB
